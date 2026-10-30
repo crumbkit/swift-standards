@@ -1,0 +1,55 @@
+# A worked example: the adoption map of tallykeeper, a made-up app for
+# iPhone and Mac that counts habits and syncs the counts through CloudKit.
+# Every path and value here is illustrative.
+
+schema = "swift-standards/adoption/v1"
+standards = { version = "0.1.0", commit = "the commit of swift-standards this map was reviewed against" }
+
+# tallykeeper is a SwiftUI app that ships through TestFlight and as a
+# notarized Mac download.
+profiles = ["base", "app", "distribution"]
+
+[[binding]]
+rule = "BASE-6"
+owners = [
+  "Apps/Shared/TallyCloud.swift",
+  "Apps/Shared/Settings.swift",
+  "Sources/Theme/Tokens.swift",
+  "Sources/Theme/Motion.swift",
+]
+checks = ["bin/check-owners, with its list in owners.txt"]
+note = "TallyCloud owns CloudKit. Settings owns UserDefaults and launch arguments. Tokens owns literal colours and sizes, and Motion owns every animation (APP-1)."
+
+[[binding]]
+rule = "BASE-28"
+owners = ["Apps/Shared/Keychain.swift"]
+checks = ["review"]
+note = "tallykeeper keeps one secret, the export token, and only Keychain.swift reads its value."
+
+[[decision]]
+id = "lanes"
+requirement = """
+- Lane: `lane` in .github/workflows/ci.yml, on each pull request and each push to main, on the macos-26 image. It runs every step of the pull-request lane except `platforms`, because tallykeeper adopts no `library` profile. Its budget is twenty minutes, the job's timeout. A merge waits for it.
+- Lane: Dependabot security alerts, on whenever GitHub publishes an advisory. Nothing waits for an alert, and bin/testflight and bin/release-mac refuse to build while one is open.
+"""
+reason = "The pull-request lane stays under twenty minutes with one simulator. An advisory found after merge is safe, because no release can be built until it is resolved."
+realizations = [".github/workflows/ci.yml", "bin/testflight", "bin/release-mac"]
+
+[[decision]]
+id = "isolation"
+requirement = "Sources/Theme and both app targets default to the main actor. Sources/Tallies and Sources/Sync stay nonisolated."
+reason = "Theme and the apps hold only user-interface code. Tallies and Sync are logic that the Mac app also runs in the background."
+realizations = ["Package.swift", "Config/app.xcconfig"]
+
+[[decision]]
+id = "signing"
+requirement = "The owner signs every release on their own Mac. bin/testflight signs automatically with the team in project.yml and uploads to App Store Connect. bin/release-mac signs with the owner's Developer ID certificate from their keychain and notarizes with a notarytool keychain profile."
+reason = "CI never holds a signing identity (DIST-1), and the owner releases rarely enough that a local release costs little."
+realizations = ["bin/testflight", "bin/release-mac", "project.yml"]
+
+[[exception]]
+rule = "BASE-10"
+paths = ["Apps/iOS/HistoryView.swift"]
+owner = "Luke Randall"
+reason = "The history screen had 1,180 lines when tallykeeper adopted the standards."
+correction = "Move the chart and the list into their own views when the screen next changes."

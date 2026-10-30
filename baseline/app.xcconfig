@@ -1,0 +1,19 @@
+// The build settings every Xcode target uses (BASE-1, BASE-3, BASE-4).
+// project.yml names this file as each target's configFiles entry. CI adds
+// SWIFT_TREAT_WARNINGS_AS_ERRORS=YES on the xcodebuild command line.
+
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete
+// App targets hold user-interface code, so they default to the main actor.
+SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor
+SWIFT_APPROACHABLE_CONCURRENCY = YES
+SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = YES
+SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = YES
+SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY = YES
+SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES
+SWIFT_STRICT_MEMORY_SAFETY = YES
+// Build-phase scripts may read and write only their declared files.
+ENABLE_USER_SCRIPT_SANDBOXING = YES
+// Asset catalogs generate Swift symbols, so a missing colour fails to compile.
+ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES
+ENABLE_HARDENED_RUNTIME[sdk=macosx*] = YES

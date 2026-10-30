@@ -1,0 +1,60 @@
+# An XcodeGen spec for one app on iPhone, iPad and Mac (BASE-9). A project
+# copies it to project.yml and replaces every <placeholder>. bin/project runs
+# `xcodegen generate`; git ignores the generated .xcodeproj.
+# Config/app.xcconfig is a copy of the standards' baseline/app.xcconfig.
+name: <App>
+options:
+  bundleIdPrefix: <reverse-dns-prefix>
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+# The bundle identifier, team and versions are set here once (DIST-4).
+settings:
+  base:
+    DEVELOPMENT_TEAM: <team-id>
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1.0"
+    # bin/testflight and bin/release-mac set the build number (DIST-5).
+    CURRENT_PROJECT_VERSION: "1"
+    PRODUCT_BUNDLE_IDENTIFIER: <reverse-dns-prefix>.<app>
+    GENERATE_INFOPLIST_FILE: YES
+# The package at the root holds every module the apps use.
+packages:
+  <package>:
+    path: .
+targets:
+  <App>-iOS:
+    type: application
+    platform: iOS
+    configFiles:
+      Debug: Config/app.xcconfig
+      Release: Config/app.xcconfig
+    sources: [Apps/Shared, Apps/iOS]
+    dependencies:
+      - package: <package>
+        product: <Module>
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        # App Store Connect refuses an iPad app that does not allow every
+        # orientation, because iPad multitasking needs them.
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
+          UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
+          UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+  <App>-macOS:
+    type: application
+    platform: macOS
+    configFiles:
+      Debug: Config/app.xcconfig
+      Release: Config/app.xcconfig
+    sources: [Apps/Shared, Apps/macOS]
+    dependencies:
+      - package: <package>
+        product: <Module>
+  <App>-UITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Apps/UITests]
+    dependencies:
+      - target: <App>-iOS

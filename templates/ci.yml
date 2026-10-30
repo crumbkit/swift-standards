@@ -1,0 +1,68 @@
+# A workflow that runs the pull-request lane from README.md. A project copies
+# it to .github/workflows/ci.yml, removes the steps whose "Runs when"
+# condition it does not meet, replaces each <placeholder>, and records the
+# lanes in its map's `lanes` decision (BASE-13).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Each job grants only the permissions it needs.
+permissions: {}
+
+# A new push cancels the run for the previous push, because the newer run
+# checks the same changes and more.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lane:
+    # A runner image whose Xcode list includes the version .xcode-version names.
+    runs-on: macos-26
+    # The pull-request lane's time budget (BASE-13).
+    timeout-minutes: 20
+    permissions:
+      contents: read # actions/checkout reads the repository.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The exact Xcode that .xcode-version names (BASE-12). Its toolchain
+      # supplies swift and swift-format.
+      - name: xcode
+        run: sudo xcode-select --switch "/Applications/Xcode_$(cat .xcode-version).app"
+      # The steps that read only the source run first, so a pull request
+      # that fails one of them fails in seconds.
+      - name: format
+        run: swift format lint --strict --recursive .
+      - name: workflows
+        run: pipx run zizmor==1.31.1 .
+      - name: owners
+        run: bin/check-owners
+      - name: build
+        run: swift build --force-resolved-versions --build-tests -Xswiftc -warnings-as-errors
+      - name: tests
+        run: swift test --force-resolved-versions --skip-build
+      # The apps build unsigned (DIST-1), from the generated project (BASE-9).
+      - name: xcodegen
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/xcodegen.zip" \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          "$RUNNER_TEMP/xcodegen/bin/xcodegen" generate --quiet
+      - name: apps
+        run: |
+          for pair in "<App>-macOS|platform=macOS" "<App>-iOS|generic/platform=iOS"; do
+            xcodebuild build -project <App>.xcodeproj -scheme "${pair%%|*}" \
+              -destination "${pair#*|}" -onlyUsePackageVersionsFromResolvedFile \
+              CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES -quiet
+          done
+      - name: ui-tests
+        run: |
+          xcodebuild test -project <App>.xcodeproj -scheme <App>-UITests \
+            -destination "platform=iOS Simulator,name=<simulator>" \
+            -onlyUsePackageVersionsFromResolvedFile CODE_SIGNING_ALLOWED=NO -quiet

@@ -1,0 +1,25 @@
+# Dependabot opens the weekly pull requests that move a project's pins
+# (BASE-12). Each ecosystem puts all its updates in one pull request. The
+# 7-day cooldown proposes a release only once it is 7 days old, so a release
+# that is withdrawn soon after publication is never proposed. Dependabot
+# cannot move .xcode-version, so a person raises it.
+version: 2
+updates:
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      swift:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
