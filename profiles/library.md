@@ -7,7 +7,6 @@ A project adopts this profile when other packages depend on it.
 | ID | Rule | Check |
 | --- | --- | --- |
 | LIB-1 | Every public declaration has a documentation comment that starts with a one-line summary and documents its parameters, its return value and what it throws. | [baseline/swift-format-library.json](../baseline/swift-format-library.json) as `Sources/.swift-format`, through the `format` step |
-| LIB-2 | The library reads no environment variable or `UserDefaults` key and writes to no standard stream. It takes values, writers and clocks from its caller. | the `owners` step (BASE-6) |
 | LIB-3 | `Package.swift` states the minimum version of each platform the library supports, and the library builds for every one of them. | the `platforms` step |
 
 ## release
@@ -22,6 +21,7 @@ A project adopts this profile when other packages depend on it.
 | --- | --- |
 | LIB-5 | The library keeps no global mutable state. |
 | LIB-6 | Adding a case to a public enum breaks every dependant that switches on it, so it needs a major version. Model a set of values that may grow as a struct with static members. Keep an enum where the domain fixes its cases, such as a compass direction. |
+| LIB-2 | The library reads no environment variable or `UserDefaults` key and writes to no standard stream. It takes values, writers and clocks from its caller. |
 
 ## Reasons
 
