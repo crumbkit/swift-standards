@@ -17,7 +17,7 @@ owners = [
   "Sources/Theme/Tokens.swift",
   "Sources/Theme/Motion.swift",
 ]
-checks = ["bin/check-owners, with its list in owners.txt"]
+checks = ["review"]
 note = "TallyCloud owns CloudKit. Settings owns UserDefaults and launch arguments. Tokens owns literal colours and sizes, and Motion owns every animation (APP-1)."
 
 [[binding]]

@@ -50,12 +50,12 @@ examples/
 
 Every project runs these steps on each pull request (BASE-13). CI and the
 project's `bin/` scripts use the same step names, so a failure reads the same
-in both places. `bin/lint` runs `format`, `owners` and `build`, and
+in both places. `bin/lint` runs `format` and `build`, and
 `bin/test` runs `tests`, so a person or an agent runs the lane before a push
 with two commands.
 
 Within one job the steps run cheapest first, so a pull request fails as early
-as it can. `format`, `workflows` and `owners` read only the source and run
+as it can. `format` and `workflows` read only the source and run
 before anything resolves or builds. A project may split the steps across
 parallel jobs instead.
 
@@ -63,7 +63,6 @@ parallel jobs instead.
 | --- | --- | --- |
 | `format` | `swift format lint --strict --recursive .` | always |
 | `workflows` | `zizmor .` | the project has `.github/workflows/` |
-| `owners` | the project's owner check (BASE-6) | always |
 | `build` | `swift build --force-resolved-versions --build-tests -Xswiftc -warnings-as-errors` | always |
 | `tests` | `swift test --force-resolved-versions --skip-build` | always |
 | `apps` | `xcodebuild build` for each app scheme, with `-onlyUsePackageVersionsFromResolvedFile`, `CODE_SIGNING_ALLOWED=NO` and `SWIFT_TREAT_WARNINGS_AS_ERRORS=YES` | the project adopts `app` |
@@ -102,8 +101,8 @@ Every rule names its check. The tiers run from cheapest to most expensive.
   checks each `drift` rule against the project's files. The rules are written
   so that a script can check them, and the first project that needs one
   writes it here.
-- No owner check (BASE-6) ships with these standards yet either. Each
-  project keeps its own in `bin/check-owners` until one moves here.
+- BASE-6, APP-1 and LIB-2 are `review` rules because no owner check exists.
+  They move to `tool` when one ships here.
 
 ## Toolchain facts
 

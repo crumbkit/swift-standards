@@ -16,7 +16,6 @@ Every project follows these rules.
 | ID | Rule | Check |
 | --- | --- | --- |
 | BASE-5 | Format and lint all Swift with the toolchain's swift-format and [baseline/swift-format.json](../baseline/swift-format.json). The baseline forbids force unwraps, `try!` and implicitly unwrapped optionals. A declaration or file that needs one carries `// swift-format-ignore: <Rule>` or `// swift-format-ignore-file: <Rule>`, and the next comment line states the reason. | `swift format lint --strict --recursive .` |
-| BASE-6 | Give each effect one owning file or module. Effects include the clock, the file system, the network, `UserDefaults`, the keychain, biometrics, cloud storage, launching another program, and standard output. Other code takes a value, a protocol or a closure from the owner. The project's owner check lists, for each framework, type or call, the files that may use it, and fails on a use anywhere else. A logic target never imports SwiftUI, UIKit or AppKit. | the `owners` step |
 | BASE-7 | Commit `Package.resolved`. CI resolves packages only from it. | `--force-resolved-versions` for SwiftPM, `-onlyUsePackageVersionsFromResolvedFile` for xcodebuild |
 | BASE-8 | Every unit test runs under `swift test` on macOS, without a simulator, signing or network. | the `tests` step |
 
@@ -46,6 +45,7 @@ Every project follows these rules.
 
 | ID | Rule |
 | --- | --- |
+| BASE-6 | Give each effect one owning file or module. Effects include the clock, the file system, the network, `UserDefaults`, the keychain, biometrics, cloud storage, launching another program, and standard output. Other code takes a value, a protocol or a closure from the owner. The map's BASE-6 binding lists, for each framework, type or call, the files that may use it, and a reviewer checks the changed files against that list. A logic target never imports SwiftUI, UIKit or AppKit. |
 | BASE-16 | Write the test first. A change starts with a test that fails for want of the behaviour, and a bug fix starts with a test that reproduces the bug. When no automated test can show the change, such as a layout change, the pull request says how it was checked, for example with screenshots in light and dark. |
 | BASE-17 | Choose the simplest design that works. It keeps every existing feature and its fidelity, and has the fewest types, files and moving parts. Add code only when removing code cannot make the change. Add an abstraction only when it removes two copies or another rule needs it. |
 | BASE-18 | Compose small types. Give each domain meaning one type with one validation rule, and build larger values from those types. Do not build one large record whose many optional fields only some callers fill; split it into the types each caller needs. Prefer a standard or framework type to a new one. |
@@ -90,9 +90,10 @@ Every project follows these rules.
   nonisolated keeps them usable from any actor and quick to test.
 - BASE-5: swift-format ships with the toolchain, so the formatter's version
   moves with `.xcode-version` and needs no separate install or pin.
-- BASE-6: An effect reached from anywhere cannot be replaced in a test, and
-  a review cannot find every place that touches it. A list of owners turns
-  "who may call this" into a check.
+- BASE-6: An effect reached from anywhere cannot be replaced in a test. The
+  binding's list of owners tells a reviewer which files may call each
+  effect, so the reviewer checks a change's files without searching the
+  whole repository.
 - BASE-9: A generated Xcode project leaves no `project.pbxproj` merge
   conflicts, and every target setting can be reviewed as text.
 - BASE-12: An unpinned Xcode or tool changes the build when a new version
