@@ -3,11 +3,6 @@
 A project adopts this profile when it builds a SwiftUI app for iPhone, iPad
 or Mac.
 
-## tool
-
-| ID | Rule | Check |
-| --- | --- | --- |
-
 ## drift
 
 | ID | Rule | Check |
@@ -27,7 +22,7 @@ or Mac.
 
 | ID | Rule |
 | --- | --- |
-| APP-1 | Literal colours, font sizes and animations appear only in the token and motion owners (APP-10, APP-18). Literals include `Color(red:`, `Color(hue:`, `Color(white:`, `UIColor(`, `NSColor(`, `.system(size:`, `withAnimation` and `.animation(`; these are examples of what the rule covers, and the owners list names the rest. |
+| APP-1 | Literal colours, font sizes and animations appear only in the token and motion owners (APP-10, APP-18). Literals include `Color(red:`, `Color(hue:`, `Color(white:`, `UIColor(`, `NSColor(`, `.system(size:`, `withAnimation` and `.animation(`; these are examples of what the rule covers. |
 | APP-7 | Build no screen until the owner has signed off its design. The pull request that builds a screen links the signed-off design and shows screenshots in light and dark. |
 | APP-8 | Use the system's components and semantics first: its controls, navigation containers, lists, sheets and alerts, semantic colours such as `.primary` and `.secondary`, materials, SF Symbols and text styles. These adapt to light and dark, Increase Contrast and Dynamic Type without code. Build a custom component only when the signed-off design needs one. |
 | APP-9 | Name each design token by its role, such as `textPrimary`, `surfaceRaised` or `danger`. A name that describes an appearance, such as `blue500`, is wrong in the other theme. |
